@@ -224,9 +224,9 @@ autocmd({"FocusLost"}, {
 		local napi           = require("lsp-timeout.nvim-api")
         local configDefault = require("lsp-timeout.config").default
         local config = configDefault:extend(vim.b[auEvent.buf].lspTimeoutConfig or vim.g["lsp-timeout-config"] or vim.g.lspTimeoutConfig or {})
-		local clientsRunning = napi.Lsp.Clients:new(napi.tabs.current.lsp:clients())
+        local clients = napi.tabs.current.lsp:clients()
 		local ignoreLsps = config.lsps and config.lsps.ignore or {}
-		clientsRunning = filterList(clientsRunning, ignoreLsps)
+		local clientsRunning = napi.Lsp.Clients:new(filterList(clients, ignoreLsps))
 		_G.lspTimeOutState.b[auEvent.buf] = {}
 		_G.lspTimeOutState.b[auEvent.buf].stopped_clients = clientsRunning
 		local clientsNum     = #clientsRunning
