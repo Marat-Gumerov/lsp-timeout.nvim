@@ -199,10 +199,10 @@ autocmd({"FocusGained"}, {
 	end
 })
 
-local function filterList(list, ignoreList)
+local function filterClients(clients, ignoreList)
 	local filteredList = {}
-	for _, item in ipairs(list) do
-		if not vim.tbl_contains(ignoreList, item) then
+	for _, item in ipairs(clients) do
+		if not vim.tbl_contains(ignoreList, item.name) then
 			table.insert(filteredList, item)
 		end
 	end
@@ -222,11 +222,11 @@ autocmd({"FocusLost"}, {
 
 		-- LuaFormatter on
 		local napi           = require("lsp-timeout.nvim-api")
-        local configDefault = require("lsp-timeout.config").default
-        local config = configDefault:extend(vim.b[auEvent.buf].lspTimeoutConfig or vim.g["lsp-timeout-config"] or vim.g.lspTimeoutConfig or {})
-        local clients = napi.tabs.current.lsp:clients()
+		local configDefault = require("lsp-timeout.config").default
+		local config = configDefault:extend(vim.b[auEvent.buf].lspTimeoutConfig or vim.g["lsp-timeout-config"] or vim.g.lspTimeoutConfig or {})
+		local clients = napi.tabs.current.lsp:clients()
 		local ignoreLsps = config.lsps and config.lsps.ignore or {}
-		local clientsRunning = napi.Lsp.Clients:new(filterList(clients, ignoreLsps))
+		local clientsRunning = napi.Lsp.Clients:new(filterClients(clients, ignoreLsps))
 		_G.lspTimeOutState.b[auEvent.buf] = {}
 		_G.lspTimeOutState.b[auEvent.buf].stopped_clients = clientsRunning
 		local clientsNum     = #clientsRunning
