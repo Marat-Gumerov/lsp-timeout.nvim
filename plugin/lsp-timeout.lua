@@ -199,6 +199,16 @@ autocmd({"FocusGained"}, {
 	end
 })
 
+local function filterList(list, ignoreList)
+	local filteredList = {}
+	for _, item in ipairs(list) do
+		if not vim.tbl_contains(ignoreList, item) then
+			table.insert(filteredList, item)
+		end
+	end
+	return filteredList
+end
+
 autocmd({"FocusLost"}, {
 	desc = "Stop LSP servers if application window isn't focused",
 	group = auLSTO,
@@ -212,7 +222,11 @@ autocmd({"FocusLost"}, {
 
 		-- LuaFormatter on
 		local napi           = require("lsp-timeout.nvim-api")
+        local configDefault = require("lsp-timeout.config").default
+        local config = configDefault:extend(vim.b[auEvent.buf].lspTimeoutConfig or vim.g["lsp-timeout-config"] or vim.g.lspTimeoutConfig or {})
 		local clientsRunning = napi.Lsp.Clients:new(napi.tabs.current.lsp:clients())
+		local ignoreLsps = config.lsps and config.lsps.ignore or {}
+		clientsRunning = filterList(clientsRunning, ignoreLsps)
 		_G.lspTimeOutState.b[auEvent.buf] = {}
 		_G.lspTimeOutState.b[auEvent.buf].stopped_clients = clientsRunning
 		local clientsNum     = #clientsRunning
@@ -221,8 +235,6 @@ autocmd({"FocusLost"}, {
 		
 	
 		if not _G.lspTimeOutState.stopTimer and clientsNum > 0 then
-			local configDefault = require("lsp-timeout.config").default
-			local config = configDefault:extend(vim.b[auEvent.buf].lspTimeoutConfig or vim.g["lsp-timeout-config"] or vim.g.lspTimeoutConfig or {})
 			if vim.tbl_contains(config.filetypes.ignore, vim.bo[auEvent.buf].filetype) then
 				return
 			end
